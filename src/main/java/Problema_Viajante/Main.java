@@ -7,7 +7,9 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        int[] numCiudades = {20, 40, 60, 80, 100}; // Cantidad de ciudades para cada grafo (red)
+        // Cambiar los tamaños de grafo para incluir 10 ciudades
+        int[] numCiudades = {10, 20, 40, 80, 100}; // Nuevos tamaños de grafo
+
         String archivoCiudades = "Recursos/Ciudades.txt"; // Nombre del archivo que contiene las ciudades
 
         for (int n : numCiudades) {
@@ -25,31 +27,31 @@ public class Main {
             int tamanioPoblacion = obtenerTamanioPoblacion(n);
             EstrategiaGenetica genetico = new EstrategiaGenetica(grafo, n, tamanioPoblacion);
 
-            // Ejecutar 20 generaciones del algoritmo genético
-            for (int i = 0; i < 20; i++) {
-                genetico.ejecutarGeneracion();
-            }
-
-            // Imprimir la mejor ruta y su distancia total
-            System.out.println("Resultados después de 20 generaciones:");
+            // Ejecutar y medir 1 generación del algoritmo genético
+            System.out.println("\n--- Resultados después de 1 generación ---");
+            genetico.ejecutarCicloGeneraciones(1);
             genetico.imprimirMejorRuta();
+            genetico.imprimirTopPoblaciones();
+
+            // Ejecutar y medir 20 generaciones del algoritmo genético
+            System.out.println("\n--- Resultados después de 20 generaciones ---");
+            genetico.ejecutarCicloGeneraciones(20);
+            genetico.imprimirMejorRuta();
+            genetico.imprimirTopPoblaciones();
 
             // Ejecutar 20 generaciones adicionales (total 40)
-            for (int i = 0; i < 20; i++) {
-                genetico.ejecutarGeneracion();
-            }
-
-            System.out.println("Resultados después de 40 generaciones:");
+            System.out.println("\n--- Resultados después de 40 generaciones ---");
+            genetico.ejecutarCicloGeneraciones(20);
             genetico.imprimirMejorRuta();
+            genetico.imprimirTopPoblaciones();
         }
     }
 
     /**
-     * Generar grafo con ciudades grafo.
-     * Metodo encargado de generar un grafo con todas las ciudades dentro del archivo "Recursos/Ciudades.txt"
+     * Genera un grafo con una cantidad específica de ciudades a partir de un archivo de nombres.
      *
-     * @param archivoCiudades archivo con las ciudades
-     * @param numCiudades     cantidad de ciudades(vertices) para el grafo(red)
+     * @param archivoCiudades archivo con los nombres de las ciudades
+     * @param numCiudades     cantidad de ciudades (vértices) para el grafo (red)
      * @return grafo completo
      */
     public static Grafo generarGrafoConCiudades(String archivoCiudades, int numCiudades) {
@@ -79,11 +81,10 @@ public class Main {
     }
 
     /**
-     * Leer ciudades desde archivos
-     * Metodo encargado de leer las ciudades dentro del archivo "Recursos/Ciudades.txt"
+     * Lee los nombres de las ciudades desde un archivo.
      *
-     * @param archivo archivo con las ciudades
-     * @return ciudades seleccionadas
+     * @param archivo archivo con los nombres de las ciudades
+     * @return lista de nombres de ciudades
      */
     public static List<String> leerCiudadesDesdeArchivo(String archivo) {
         List<String> ciudades = new ArrayList<>();
@@ -106,16 +107,18 @@ public class Main {
      */
     public static int obtenerTamanioPoblacion(int numCiudades) {
         switch (numCiudades) {
+            case 10:
+                return 5;  // Tamaño de población para grafo de 10 ciudades
             case 20:
-                return 10;
+                return 10; // Tamaño de población para grafo de 20 ciudades
             case 40:
-                return 20;
+                return 20; // Tamaño de población para grafo de 40 ciudades
             case 80:
-                return 40;
+                return 40; // Tamaño de población para grafo de 80 ciudades
             case 100:
-                return 50;
+                return 50; // Tamaño de población para grafo de 100 ciudades
             default:
-                return 5; // Tamaño de población para grafo de 10 ciudades
+                throw new IllegalArgumentException("Número de ciudades no soportado: " + numCiudades);
         }
     }
 }
