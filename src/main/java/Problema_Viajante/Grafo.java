@@ -4,11 +4,19 @@ import java.util.*;
 
 public class Grafo {
     private Map<String, List<Map.Entry<String, Integer>>> adjList;
+    private String ciudadInicial; // Añadir atributo para la ciudad inicial
 
     // Constructor
     public Grafo() {
         adjList = new HashMap<>();
     }
+
+    //agregrado para corregir error con estrategiq voraz
+    // Método público para acceder a las ciudades adyacentes de una ciudad dada
+    public List<Map.Entry<String, Integer>> getAdyacentes(String ciudad) {
+        return adjList.getOrDefault(ciudad, new LinkedList<>());
+    }
+
 
     /**
      * Agregar ciudad.
@@ -93,6 +101,22 @@ public class Grafo {
                 dfs(adyacente.getKey(), visitado);
             }
         }
+    }
+
+    public void seleccionarCiudadInicialAleatoria() {
+        List<String> ciudades = new ArrayList<>(adjList.keySet());
+        Random random = new Random();
+        this.ciudadInicial = ciudades.get(random.nextInt(ciudades.size())); // Selecciona una ciudad aleatoria
+    }
+
+    // Método para obtener la ciudad inicial
+    //public String getCiudadInicial() {
+    //    return ciudadInicial;
+    // }
+
+
+    public void setCiudadInicial(String ciudadInicial) {
+        this.ciudadInicial = ciudadInicial;
     }
 
     /**

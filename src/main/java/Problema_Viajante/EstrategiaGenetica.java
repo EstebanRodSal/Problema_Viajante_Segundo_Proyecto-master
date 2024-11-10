@@ -27,11 +27,24 @@ public class EstrategiaGenetica {
         Set<List<String>> poblacionSet = new HashSet<>();
         List<String> ciudades = new ArrayList<>(grafo.getCiudades());
 
+        // Selecciona la ciudad inicial aleatoria
+        String ciudadInicial = grafo.getCiudades().get(0);
+
         while (poblacionSet.size() < tamanioPoblacion) {
             Collections.shuffle(ciudades); // Baraja para crear un cromosoma aleatorio
-            List<String> cromosoma = new ArrayList<>(ciudades);
-            cromosoma.add(ciudades.get(0)); // Regresar a la ciudad de inicio
-            poblacionSet.add(new ArrayList<>(cromosoma));
+            List<String> cromosoma = new ArrayList<>( );
+            cromosoma.add(ciudadInicial);  // Coloca la ciudad inicial en la primera posición
+
+            // Agregar el resto de las ciudades (sin duplicados)
+            for (String ciudad : ciudades) {
+                if (!ciudad.equals(ciudadInicial)) {
+                    cromosoma.add(ciudad);
+                }
+            }
+            cromosoma.add(ciudadInicial); // Regresar a la ciudad de inicio al final
+            //cromosoma.add(ciudades.get(0)); // Regresar a la ciudad de inicio
+            //poblacionSet.add(new ArrayList<>(cromosoma));
+            poblacionSet.add(cromosoma);
             contadorAsignaciones++;
         }
 
@@ -84,9 +97,9 @@ public class EstrategiaGenetica {
         hijo.add(hijo.get(0));
 
         // Imprimir padres e hijos con sus puntuaciones
-        System.out.printf("Padre1: %s, puntuación: %d\n", padre1, calcularFitness(padre1));
-        System.out.printf("Padre2: %s, puntuación: %d\n", padre2, calcularFitness(padre2));
-        System.out.printf("Hijo: %s, puntuación: %d\n", hijo, calcularFitness(hijo));
+        // System.out.printf("Padre1: %s, puntuación: %d\n", padre1, calcularFitness(padre1));
+        // System.out.printf("Padre2: %s, puntuación: %d\n", padre2, calcularFitness(padre2));
+        // System.out.printf("Hijo: %s, puntuación: %d\n", hijo, calcularFitness(hijo));
 
         return hijo;
     }
@@ -96,13 +109,13 @@ public class EstrategiaGenetica {
      */
     private void mutar(List<String> cromosoma) {
         int puntuacionAntes = calcularFitness(cromosoma);
-        System.out.printf("Individuo antes de mutación: %s, puntuación: %d\n", cromosoma, puntuacionAntes);
+        //System.out.printf("Individuo antes de mutación: %s, puntuación: %d\n", cromosoma, puntuacionAntes);
 
         mutacionAleatoria(cromosoma);
         mutacionDirigida(cromosoma);
 
         int puntuacionDespues = calcularFitness(cromosoma);
-        System.out.printf("Individuo después de mutación: %s, puntuación: %d\n", cromosoma, puntuacionDespues);
+        //System.out.printf("Individuo después de mutación: %s, puntuación: %d\n", cromosoma, puntuacionDespues);
     }
 
     /**
@@ -110,8 +123,14 @@ public class EstrategiaGenetica {
      */
     private void mutacionAleatoria(List<String> cromosoma) {
         Random random = new Random();
-        int idx1 = random.nextInt(numCiudades - 1) + 1; // No incluir la ciudad inicial
-        int idx2 = random.nextInt(numCiudades - 1) + 1;
+        int idx1, idx2;
+        //int idx1 = random.nextInt(numCiudades - 1) + 1; // No incluir la ciudad inicial
+        //int idx2 = random.nextInt(numCiudades - 1) + 1;
+        do {
+            idx1 = random.nextInt(numCiudades - 1) + 1; // No incluir la ciudad inicial
+            idx2 = random.nextInt(numCiudades - 1) + 1;
+            contadorComparaciones += 2; // Dos comparaciones para evaluar si idx1 e idx2 son iguales
+        } while (idx1 == idx2);
 
         int fitnessOriginal = calcularFitness(cromosoma);
         contadorComparaciones++; // Comparación al evaluar si la mutación mejora el fitness
@@ -218,9 +237,9 @@ public class EstrategiaGenetica {
             String origen = mejorRuta.get(i);
             String destino = mejorRuta.get(i + 1);
             int distancia = grafo.getDistancia(origen, destino);
-            System.out.println("Arco: " + origen + " -> " + destino + " | Distancia: " + distancia);
+            //System.out.println("Arco: " + origen + " -> " + destino + " | Distancia: " + distancia);
         }
-        System.out.println("Distancia total: " + mejorDistancia);
+        //System.out.println("Distancia total: " + mejorDistancia);
     }
 
     /**

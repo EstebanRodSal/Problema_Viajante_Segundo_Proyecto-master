@@ -7,13 +7,18 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        // Cambiar los tamaños de grafo para incluir 10 ciudades
-        int[] numCiudades = {10, 20, 40, 80, 100}; // Nuevos tamaños de grafo
+        //Codigos de colores ANSI para imprimir en la terminal
+        final String RESET = "\u001B[0m";
+        final String rojo = "\u001B[31m";
+        final String verde = "\u001B[32m";
+        final String amarillo = "\u001B[33m";
+        final String azul = "\u001B[34m";
 
+        int[] numCiudades = {10, 20, 40, 80, 100}; // Cantidad de ciudades para cada grafo (red)
         String archivoCiudades = "Recursos/Ciudades.txt"; // Nombre del archivo que contiene las ciudades
 
         for (int n : numCiudades) {
-            System.out.println("\nGenerando grafo con " + n + " ciudades:");
+            System.out.println(rojo + "\nGrafo generado con " + n + " ciudades:");
             Grafo grafo = generarGrafoConCiudades(archivoCiudades, n);
             grafo.imprimirGrafo();
 
@@ -23,6 +28,21 @@ public class Main {
                 System.out.println("El grafo no es conexo.");
             }
 
+            System.out.print(RESET);
+            // Inicializar y ejecutar Estrategia Voraz
+            EstrategiaVoraz voraz = new EstrategiaVoraz(grafo);
+            String ciudadInicial = grafo.getCiudades().get(0); // Selecciona la primera ciudad como inicial
+            System.out.println("\nEjecutando Estrategia Voraz desde " + ciudadInicial + ":");
+            List<String> rutaVoraz = voraz.encontrarRutaVoraz();
+
+            if (rutaVoraz != null) {
+                System.out.println(verde + "Ruta Voraz: " + rutaVoraz + RESET);
+            } else {
+                System.out.println(rojo + "No se pudo encontrar una ruta completa usando Estrategia Voraz." + RESET);
+            }
+
+
+            // Inicializar la estrategia genética con el grafo generado
             // Inicializar la estrategia genética con el grafo generado
             int tamanioPoblacion = obtenerTamanioPoblacion(n);
             EstrategiaGenetica genetico = new EstrategiaGenetica(grafo, n, tamanioPoblacion);
@@ -42,7 +62,9 @@ public class Main {
             // Ejecutar 20 generaciones adicionales (total 40)
             System.out.println("\n--- Resultados después de 40 generaciones ---");
             genetico.ejecutarCicloGeneraciones(20);
+            System.out.print(azul);
             genetico.imprimirMejorRuta();
+            System.out.print(RESET);
             genetico.imprimirTopPoblaciones();
         }
     }
@@ -54,6 +76,8 @@ public class Main {
      * @param numCiudades     cantidad de ciudades (vértices) para el grafo (red)
      * @return grafo completo
      */
+
+
     public static Grafo generarGrafoConCiudades(String archivoCiudades, int numCiudades) {
         List<String> nombresCiudades = leerCiudadesDesdeArchivo(archivoCiudades);
         Collections.shuffle(nombresCiudades); // Barajar nombres para evitar repetición
