@@ -9,7 +9,8 @@ class EstrategiaVoraz {
     private int contadorAsignaciones, contadorComparaciones;
     private long memoriaUsadaInicial, memoriaUsadaFinal;
 
-
+    // Contador de memoria
+    private int memoriaConsumida;
 
     public EstrategiaVoraz(Grafo grafo) {
         this.grafo = grafo;
@@ -23,6 +24,7 @@ class EstrategiaVoraz {
         contadorComparaciones = 0;
         memoriaUsadaInicial = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         tiempoInicio = System.nanoTime();
+        memoriaConsumida = 0;
     }
 
     /**
@@ -31,6 +33,19 @@ class EstrategiaVoraz {
     private void finalizarMedicion() {
         tiempoFin = System.nanoTime();
         memoriaUsadaFinal = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+    }
+
+    /**
+     * Calcula la memoria consumida en bits.
+     */
+    private void calcularMemoriaConsumida() {
+        // Añade memoria para cada tipo de variable, considerando su tamaño en bits
+        memoriaConsumida += 64; // tiempoInicio (long)
+        memoriaConsumida += 64; // tiempoFin (long)
+        memoriaConsumida += 32; // contadorAsignaciones (int)
+        memoriaConsumida += 32; // contadorComparaciones (int)
+        memoriaConsumida += 64; // memoriaUsadaInicial (long)
+        memoriaConsumida += 64; // memoriaUsadaFinal (long)
     }
 
     /**
@@ -45,19 +60,26 @@ class EstrategiaVoraz {
         System.out.printf("Memoria utilizada (MB): %.3f\n", memoriaMB);
         System.out.println("Asignaciones totales: " + contadorAsignaciones);
         System.out.println("Comparaciones totales: " + contadorComparaciones);
+        System.out.printf("Memoria consumida en bits (contando variables): %d bits\n", memoriaConsumida);
     }
-
 
     public List<String> encontrarRutaVoraz() {
         // Obtener ciudad inicial aleatoria desde el grafo
         iniciarMedicion();
         String ciudadInicial = grafo.getCiudades().get(0);
 
-        //System.out.println("Iniciando estrategia voraz desde la ciudad: "+ciudadInicial);
+        // Añadir memoria de variables locales
+        memoriaConsumida += 64; // ciudadInicial (String - referencia)
+
         Set<String> visitado = new HashSet<>();
         List<String> ruta = new ArrayList<>();
         String ciudadActual = ciudadInicial;
         int distanciaTotal = 0;
+
+        memoriaConsumida += 64; // visitado (Set - referencia)
+        memoriaConsumida += 64; // ruta (List - referencia)
+        memoriaConsumida += 64; // ciudadActual (String - referencia)
+        memoriaConsumida += 32; // distanciaTotal (int)
 
         visitado.add(ciudadInicial);
         ruta.add(ciudadInicial);
@@ -67,15 +89,16 @@ class EstrategiaVoraz {
             String ciudadMasCercana = null;
             int distanciaMinima = Integer.MAX_VALUE;
 
-            //System.out.println("Opciones desde " + ciudadActual + ":");
+            memoriaConsumida += 64; // ciudadMasCercana (String - referencia)
+            memoriaConsumida += 32; // distanciaMinima (int)
 
-            // Buscar la ciudad más cercana no visitada y mostrar las alternativas
             for (Map.Entry<String, Integer> adyacente : grafo.getAdyacentes(ciudadActual)) {
                 String ciudadDestino = adyacente.getKey();
                 int distancia = adyacente.getValue();
                 contadorComparaciones++; //comparacion de ciudadDestino
 
-                //System.out.println(" -> " + ciudadDestino + " (distancia: " + distancia + ")");
+                memoriaConsumida += 64; // ciudadDestino (String - referencia)
+                memoriaConsumida += 32; // distancia (int)
 
                 if (!visitado.contains(ciudadDestino) && distancia < distanciaMinima) {
                     distanciaMinima = distancia;
@@ -93,7 +116,6 @@ class EstrategiaVoraz {
             visitado.add(ciudadMasCercana);
             distanciaTotal += distanciaMinima;
 
-            // System.out.println("Seleccionado: " + ciudadActual + " -> " + ciudadMasCercana + " (distancia: " + distanciaMinima + ")");
             ciudadActual = ciudadMasCercana;
             contadorAsignaciones++; //asignacion de ciudadActual
         }
@@ -120,14 +142,11 @@ class EstrategiaVoraz {
             String origen = ruta.get(i);
             String destino = ruta.get(i + 1);
             int distancia = grafo.getDistancia(origen, destino);
-            //System.out.println(" - " + origen + " -> " + destino + " (distancia: " + distancia + ")");
         }
         System.out.println("Distancia total: " + distanciaTotal);
 
-        // Finalizar las mediciones de recursos
         finalizarMedicion();
-
-        // Imprimir los resultados de las mediciones
+        calcularMemoriaConsumida();
         imprimirResultadosMedicion();
 
         return ruta;
