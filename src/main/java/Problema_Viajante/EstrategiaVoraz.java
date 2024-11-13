@@ -1,6 +1,9 @@
 package Problema_Viajante;
 import java.util.*;
 
+/**
+ * Estrategia voraz.
+ */
 class EstrategiaVoraz {
     private Grafo grafo;
 
@@ -12,6 +15,11 @@ class EstrategiaVoraz {
     // Contador de memoria
     private int memoriaConsumida;
 
+    /**
+     * Constructor.
+     *
+     * @param grafo the grafo
+     */
     public EstrategiaVoraz(Grafo grafo) {
         this.grafo = grafo;
     }
@@ -36,10 +44,9 @@ class EstrategiaVoraz {
     }
 
     /**
-     * Calcula la memoria consumida en bits.
+     * Calcular la memoria consumida en bits.
      */
     private void calcularMemoriaConsumida() {
-        // Añade memoria para cada tipo de variable, considerando su tamaño en bits
         memoriaConsumida += 64; // tiempoInicio (long)
         memoriaConsumida += 64; // tiempoFin (long)
         memoriaConsumida += 32; // contadorAsignaciones (int)
@@ -49,11 +56,11 @@ class EstrategiaVoraz {
     }
 
     /**
-     * Imprime los resultados de medición de recursos.
+     * Imprimir los resultados de medición de recursos.
      */
     public void imprimirResultadosMedicion() {
-        double tiempoSegundos = (tiempoFin - tiempoInicio) / 1_000_000_000.0; // Convertir nanosegundos a segundos
-        double memoriaMB = (memoriaUsadaFinal - memoriaUsadaInicial) / (1024.0 * 1024.0); // Convertir bytes a MB
+        double tiempoSegundos = (tiempoFin - tiempoInicio) / 1_000_000_000.0;
+        double memoriaMB = (memoriaUsadaFinal - memoriaUsadaInicial) / (1024.0 * 1024.0);
 
         System.out.println("\n--- Medición de recursos ---");
         System.out.printf("Tiempo de ejecución (s): %.3f\n", tiempoSegundos);
@@ -63,12 +70,15 @@ class EstrategiaVoraz {
         System.out.printf("Memoria consumida en bits (contando variables): %d bits\n", memoriaConsumida);
     }
 
+    /**
+     * Encontrar ruta voraz.
+     *
+     * @return la mejor ruta
+     */
     public List<String> encontrarRutaVoraz() {
-        // Obtener ciudad inicial aleatoria desde el grafo
         iniciarMedicion();
         String ciudadInicial = grafo.getCiudades().get(0);
 
-        // Añadir memoria de variables locales
         memoriaConsumida += 64; // ciudadInicial (String - referencia)
 
         Set<String> visitado = new HashSet<>();
@@ -85,6 +95,8 @@ class EstrategiaVoraz {
         ruta.add(ciudadInicial);
         contadorAsignaciones++; //asignacion de ciudadInicial
 
+        System.out.println("\nIniciando recorrido desde: " + ciudadInicial);
+
         while (visitado.size() < grafo.getCiudades().size()) {
             String ciudadMasCercana = null;
             int distanciaMinima = Integer.MAX_VALUE;
@@ -92,41 +104,66 @@ class EstrategiaVoraz {
             memoriaConsumida += 64; // ciudadMasCercana (String - referencia)
             memoriaConsumida += 32; // distanciaMinima (int)
 
+            System.out.println("\nDesde " + ciudadActual + ", alternativas disponibles:");
+
+            // Lista para almacenar todas las alternativas y ordenarlas
+            List<Map.Entry<String, Integer>> alternativas = new ArrayList<>();
+
             for (Map.Entry<String, Integer> adyacente : grafo.getAdyacentes(ciudadActual)) {
                 String ciudadDestino = adyacente.getKey();
                 int distancia = adyacente.getValue();
-                contadorComparaciones++; //comparacion de ciudadDestino
 
+                if (!visitado.contains(ciudadDestino)) {
+                    alternativas.add(adyacente);
+                }
+
+                contadorComparaciones++;
                 memoriaConsumida += 64; // ciudadDestino (String - referencia)
                 memoriaConsumida += 32; // distancia (int)
+            }
 
-                if (!visitado.contains(ciudadDestino) && distancia < distanciaMinima) {
-                    distanciaMinima = distancia;
-                    ciudadMasCercana = ciudadDestino;
-                    contadorAsignaciones++; //asignacion de ciudadMasCercana
+            // Ordenar alternativas por distancia
+            alternativas.sort(Map.Entry.comparingByValue());
+
+            // Mostrar todas las alternativas ordenadas
+            for (Map.Entry<String, Integer> alt : alternativas) {
+                String estado = visitado.contains(alt.getKey()) ? "(ya visitada)" : "";
+                System.out.printf("  → %s: %d km %s\n", alt.getKey(), alt.getValue(), estado);
+
+                if (!visitado.contains(alt.getKey()) && alt.getValue() < distanciaMinima) {
+                    distanciaMinima = alt.getValue();
+                    ciudadMasCercana = alt.getKey();
+                    contadorAsignaciones++;
                 }
             }
 
             if (ciudadMasCercana == null) {
-                System.out.println("No se puede completar la ruta.");
+                System.out.println("\nNo se puede completar la ruta - no hay ciudades disponibles.");
                 return null;
             }
+
+            System.out.println("Seleccionada: " + ciudadMasCercana + " (distancia: " + distanciaMinima + " km)");
 
             ruta.add(ciudadMasCercana);
             visitado.add(ciudadMasCercana);
             distanciaTotal += distanciaMinima;
 
             ciudadActual = ciudadMasCercana;
-            contadorAsignaciones++; //asignacion de ciudadActual
+            contadorAsignaciones++;
         }
 
+        System.out.println("\nBuscando retorno a " + ciudadInicial + ":");
         boolean puedeCerrarCiclo = false;
+
         for (Map.Entry<String, Integer> adyacente : grafo.getAdyacentes(ciudadActual)) {
-            if (adyacente.getKey().equals(ciudadInicial)) {
-                int distancia = adyacente.getValue();
+            String ciudadDestino = adyacente.getKey();
+            int distancia = adyacente.getValue();
+
+            if (ciudadDestino.equals(ciudadInicial)) {
+                System.out.printf("  → %s: %d km\n", ciudadDestino, distancia);
                 distanciaTotal += distancia;
                 ruta.add(ciudadInicial);
-                System.out.println("Cerrando ciclo: " + ciudadActual + " -> " + ciudadInicial + " (distancia: " + distancia + ")");
+                System.out.println("Cerrando ciclo: " + ciudadActual + " → " + ciudadInicial + " (distancia: " + distancia + " km)");
                 puedeCerrarCiclo = true;
                 break;
             }
@@ -142,13 +179,14 @@ class EstrategiaVoraz {
             String origen = ruta.get(i);
             String destino = ruta.get(i + 1);
             int distancia = grafo.getDistancia(origen, destino);
+            System.out.printf("%s → %s: %d km\n", origen, destino, distancia);
         }
-        System.out.println("Distancia total: " + distanciaTotal);
+        System.out.println("Distancia total recorrida: " + distanciaTotal + " km");
 
         finalizarMedicion();
         calcularMemoriaConsumida();
         imprimirResultadosMedicion();
 
-        return ruta;
+        return ruta; //Devolución de la mejor ruta encontrada.
     }
 }

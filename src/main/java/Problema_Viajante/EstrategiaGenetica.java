@@ -2,6 +2,9 @@ package Problema_Viajante;
 
 import java.util.*;
 
+/**
+ * Clase Estrategia genetica.
+ */
 public class EstrategiaGenetica {
     private Grafo grafo;
     private List<List<String>> poblacion;
@@ -14,6 +17,13 @@ public class EstrategiaGenetica {
     private int contadorComparaciones;     // 32 bits
     private long memoriaConsumidaBits;     // 64 bits
 
+    /**
+     * Constructor Estrategia genetica.
+     *
+     * @param grafo            the grafo
+     * @param numCiudades      numero de ciudades
+     * @param tamanioPoblacion tamaño poblacion
+     */
     public EstrategiaGenetica(Grafo grafo, int numCiudades, int tamanioPoblacion) {
         this.grafo = grafo;                // referencia = 64 bits
         this.numCiudades = numCiudades;    // 32 bits
@@ -22,6 +32,9 @@ public class EstrategiaGenetica {
         this.poblacion = generarPoblacionInicial(); // referencia = 64 bits
     }
 
+    /**
+     * Contador de memoria.
+     */
     private void inicializarContadoresMemoria() {
         memoriaConsumidaBits = 0;
         // Contar variables de instancia
@@ -35,6 +48,9 @@ public class EstrategiaGenetica {
         memoriaConsumidaBits += 32;  // numCiudades
     }
 
+    /**
+     * Contador de memoria.
+     */
     private void contarMemoriaLista(List<?> lista) {
         memoriaConsumidaBits += 128; // Overhead de la lista (referencia + size + capacity)
 
@@ -49,6 +65,11 @@ public class EstrategiaGenetica {
         }
     }
 
+    /**
+     * Generador de población incial.
+     *
+     * @return resultado de la población
+     */
     private List<List<String>> generarPoblacionInicial() {
         Set<List<String>> poblacionSet = new HashSet<>();
         List<String> ciudades = new ArrayList<>(grafo.getCiudades());
@@ -80,6 +101,12 @@ public class EstrategiaGenetica {
         return resultado;
     }
 
+    /**
+     * Calcula el valor de aptitud (fitness) de un cromosoma midiendo la distancia total del recorrido.
+     *
+     * @param cromosoma Lista de ciudades que representa un recorrido completo
+     * @return La distancia total del recorrido representado por el cromosoma
+     */
     private int calcularFitness(List<String> cromosoma) {
         int distanciaTotal = 0;
         memoriaConsumidaBits += 32; // Variable distanciaTotal
@@ -96,6 +123,14 @@ public class EstrategiaGenetica {
         return distanciaTotal;
     }
 
+    /**
+     * Realiza el cruce entre dos cromosomas padres para generar un nuevo cromosoma hijo.
+     * Utiliza el método de cruce de orden (OX - Order Crossover).
+     *
+     * @param padre1 Primer cromosoma padre
+     * @param padre2 Segundo cromosoma padre
+     * @return Un nuevo cromosoma hijo resultado del cruce
+     */
     private List<String> cruzar(List<String> padre1, List<String> padre2) {
         int numGenes = padre1.size() - 1;
         Random random = new Random();
@@ -132,6 +167,12 @@ public class EstrategiaGenetica {
         return hijo;
     }
 
+    /**
+     * Aplica una mutación aleatoria al cromosoma intercambiando dos ciudades al azar.
+     * Solo mantiene la mutación si mejora el fitness.
+     *
+     * @param cromosoma Lista de ciudades a mutar
+     */
     private void mutacionAleatoria(List<String> cromosoma) {
         Random random = new Random();
         memoriaConsumidaBits += 64; // Referencia a random
@@ -162,6 +203,12 @@ public class EstrategiaGenetica {
         }
     }
 
+    /**
+     * Aplica una mutación dirigida al cromosoma, identificando y modificando el segmento
+     * con mayor distancia. Solo mantiene la mutación si mejora el fitness.
+     *
+     * @param cromosoma Lista de ciudades a mutar
+     */
     private void mutacionDirigida(List<String> cromosoma) {
         int maxDistancia = -1;
         int idx1 = 0;
@@ -198,6 +245,11 @@ public class EstrategiaGenetica {
         }
     }
 
+    /**
+     * Aplica ambos tipos de mutación (aleatoria y dirigida) a un cromosoma.
+     *
+     * @param cromosoma Lista de ciudades a mutar
+     */
     private void mutar(List<String> cromosoma) {
         int puntuacionAntes = calcularFitness(cromosoma);
         memoriaConsumidaBits += 32; // Variable puntuacionAntes
@@ -209,6 +261,10 @@ public class EstrategiaGenetica {
         memoriaConsumidaBits += 32; // Variable puntuacionDespues
     }
 
+    /**
+     * Ejecuta una generación completa del algoritmo genético.
+     * Incluye selección de padres, cruce, mutación y selección de sobrevivientes.
+     */
     public void ejecutarGeneracion() {
         List<List<String>> nuevaGeneracion = new ArrayList<>();
         Random random = new Random();
@@ -239,6 +295,10 @@ public class EstrategiaGenetica {
         contarMemoriaLista(poblacion);
     }
 
+    /**
+     * Imprime las 5 mejores rutas encontradas en la población actual,
+     * ordenadas por su valor de fitness.
+     */
     public void imprimirTopPoblaciones() {
         poblacion.sort(Comparator.comparingInt(this::calcularFitness));
         System.out.println("Top 5 mejores poblaciones:");
@@ -250,6 +310,10 @@ public class EstrategiaGenetica {
         }
     }
 
+    /**
+     * Imprime la mejor ruta encontrada hasta el momento,
+     * incluyendo el detalle de cada segmento del recorrido.
+     */
     public void imprimirMejorRuta() {
         poblacion.sort(Comparator.comparingInt(this::calcularFitness));
         List<String> mejorRuta = poblacion.get(0);
@@ -266,6 +330,12 @@ public class EstrategiaGenetica {
         }
     }
 
+    /**
+     * Ejecuta el algoritmo genético durante un número específico de generaciones,
+     * midiendo el consumo de recursos durante la ejecución.
+     *
+     * @param numGeneraciones Número de generaciones a ejecutar
+     */
     public void ejecutarCicloGeneraciones(int numGeneraciones) {
         memoriaConsumidaBits += 32; // Variable numGeneraciones
         iniciarMedicion();
@@ -276,16 +346,30 @@ public class EstrategiaGenetica {
         imprimirResultadosMedicion();
     }
 
+    /**
+     * Inicia la medición de recursos (tiempo, memoria, operaciones).
+     * Reinicia los contadores de asignaciones y comparaciones.
+     */
     private void iniciarMedicion() {
         contadorAsignaciones = 0;
         contadorComparaciones = 0;
         tiempoInicio = System.nanoTime();
     }
 
+    /**
+     * Finaliza la medición de recursos registrando el tiempo final.
+     */
     private void finalizarMedicion() {
         tiempoFin = System.nanoTime();
     }
 
+    /**
+     * Imprime los resultados de la medición de recursos incluyendo:
+     * - Tiempo de ejecución en segundos
+     * - Memoria utilizada en bits
+     * - Número total de asignaciones
+     * - Número total de comparaciones
+     */
     public void imprimirResultadosMedicion() {
         double tiempoSegundos = (tiempoFin - tiempoInicio) / 1_000_000_000.0;
         memoriaConsumidaBits += 64; // Variable tiempoSegundos
@@ -293,6 +377,7 @@ public class EstrategiaGenetica {
         System.out.println("\n--- Medición de recursos ---");
         System.out.printf("Tiempo de ejecución (s): %.3f\n", tiempoSegundos);
         System.out.printf("Memoria utilizada (bits): %d\n", memoriaConsumidaBits);
+        //Estos no aplican a lo solicitado
         //System.out.printf("Memoria utilizada (bytes): %.2f\n", memoriaConsumidaBits / 8.0);
         //System.out.printf("Memoria utilizada (KB): %.2f\n", memoriaConsumidaBits / (8.0 * 1024));
         //System.out.printf("Memoria utilizada (MB): %.2f\n", memoriaConsumidaBits / (8.0 * 1024 * 1024));

@@ -7,6 +7,19 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+        /*
+        Algunos puntos importantes a tomar en cuenta para entender el proyecto
+        1-Nuestro proyecto en cada ejecución crea un grafo aleatorio cuyos vertices obtienen un nombre
+        de una ciudad real(Tambien de forma aleatoria del archivo "Recursos/Ciudades") y se conectan a
+        otros vertices(ciudades) con un arco cuyo peso es de tamaño random en un rango de 1 a 50
+
+        2-En la terminal se imprimen todos los datos necesarios para realizar las mediciones
+        incluyendo otros datos como el grafo y sus conexiones, mejor ruta, entre otros.
+
+
+         */
+
+
         //Codigos de colores ANSI para imprimir en la terminal
         final String RESET = "\u001B[0m";
         final String rojo = "\u001B[31m";
@@ -29,7 +42,7 @@ public class Main {
             }
 
             System.out.print(RESET);
-            // Inicializar y ejecutar Estrategia Voraz
+            // Ejcución de la estrategia voraz
             EstrategiaVoraz voraz = new EstrategiaVoraz(grafo);
             String ciudadInicial = grafo.getCiudades().get(0); // Selecciona la primera ciudad como inicial
             System.out.println("\nEjecutando Estrategia Voraz desde " + ciudadInicial + ":");
@@ -42,12 +55,10 @@ public class Main {
             }
 
 
-            // Inicializar la estrategia genética con el grafo generado
-            // Inicializar la estrategia genética con el grafo generado
+            // Inicialización y ejecución de la estrategia genetica
             int tamanioPoblacion = obtenerTamanioPoblacion(n);
             EstrategiaGenetica genetico = new EstrategiaGenetica(grafo, n, tamanioPoblacion);
 
-            // Ejecutar y medir 1 generación del algoritmo genético
             System.out.println("\n--- Resultados después de 1 generación ---");
             genetico.ejecutarCicloGeneraciones(1);
             genetico.imprimirMejorRuta();
@@ -76,8 +87,6 @@ public class Main {
      * @param numCiudades     cantidad de ciudades (vértices) para el grafo (red)
      * @return grafo completo
      */
-
-
     public static Grafo generarGrafoConCiudades(String archivoCiudades, int numCiudades) {
         List<String> nombresCiudades = leerCiudadesDesdeArchivo(archivoCiudades);
         Collections.shuffle(nombresCiudades); // Barajar nombres para evitar repetición
